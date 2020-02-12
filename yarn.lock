@@ -230,6 +230,11 @@ adonis-acl@^1.1.1:
     lodash "^4.17.4"
     node-exceptions "^2.0.2"
 
+adonis-bumblebee@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/adonis-bumblebee/-/adonis-bumblebee-2.1.0.tgz#6d451132772619ef26dee4174a5c5d478e0952d6"
+  integrity sha512-/Ya5bPBWpX8+wjJi+yh2MRvNmCsSlLKHn8keqPLt7CvzswGkAGHyyBzQlsIo+Imo6LFWWuneEItTNcYH0Gyjmg==
+
 ansi-bgblack@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/ansi-bgblack/-/ansi-bgblack-0.1.1.tgz#a68ba5007887701b6aafbe3fa0dadfdfa8ee3ca2"
