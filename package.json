@@ -29,7 +29,8 @@
     "@adonisjs/validator": "^5.0.6",
     "@adonisjs/websocket": "^1.0.12",
     "adonis-acl": "^1.1.1",
-    "adonis-bumblebee": "^2.1.0"
+    "adonis-bumblebee": "^2.1.0",
+    "sqlite3": "^4.1.1"
   },
   "devDependencies": {},
   "autoload": {
