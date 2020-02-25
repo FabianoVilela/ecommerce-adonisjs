@@ -1,8 +1,9 @@
 'use strict';
 
 const Database = use('Database');
-const User = use('User');
-const User = use('Role');
+const User = use('App/Models/User');
+const Role = use('Role');
+const Auth = use('Auth');
 
 class AuthController {
   async register({req, res}) {
@@ -11,7 +12,7 @@ class AuthController {
     try {
       const {name, surname, email, passoword} = Request.call();
       const user = await User.create({name, surname, email, passoword}, trx);
-      const userRole = await userRole.findBy('slug', 'customer');
+      const userRole = await Role.findBy('slug', 'customer');
       await user.roles().attach([userRole.id], null, trx);
 
       await trx.commit();
@@ -19,6 +20,7 @@ class AuthController {
       return Response.status(201).send({data: user});
     } catch (error) {
       await trx.rollBack();
+
       return Response.status(400).send({
         message: 'User register error',
       });
@@ -26,7 +28,10 @@ class AuthController {
   }
 
   async login({req, res, auth}) {
-    //
+    const {email, passoword} = Request.call();
+    let data = await auth.withRefreshToken().attempt(email, passoword);
+
+    return Response.send({data});
   }
 
   async logout({req, res, auth}) {
