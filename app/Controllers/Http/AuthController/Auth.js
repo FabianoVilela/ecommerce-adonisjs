@@ -39,13 +39,21 @@ class AuthController {
   }
 
   async refresh({req, res, auth}) {
-    //
+    let refreshToken = req.input('refresh_token');
+
+    if (!refreshToken) refreshToken = req.header('refresh_token');
+
+    const user = await auth
+      .newRefreshToken()
+      .generateForRefreshToken(refreshToken);
+
+    return res.send({data: user});
   }
 
   async forgot({req, res}) {
     //
   }
-
+  ken;
   async remember({req, res}) {
     //
   }
