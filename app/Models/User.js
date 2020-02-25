@@ -52,7 +52,7 @@ class User extends Model {
   }
 
   coupons() {
-    return this.belongsToMany('App/Models/Counpon');
+    return this.belongsToMany('App/Models/Coupon');
   }
 }
 
