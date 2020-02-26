@@ -76,7 +76,20 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({params, request, response}) {}
+  async update({params: {id}, request, response}) {
+    try {
+      const product = await Product.findOrFail(id);
+      const {name, description, price, image_id} = request.all();
+
+      product.merge({name, description, price, image_id});
+
+      await product.save();
+
+      return response.send(product);
+    } catch (error) {
+      return response.status(400);
+    }
+  }
 
   /**
    * Delete a product with id.
