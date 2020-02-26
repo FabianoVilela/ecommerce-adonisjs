@@ -67,9 +67,12 @@ class UserController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async show({params, request, response, view}) {}
+  async show({params: {id}, request, response}) {
+    const user = await User.findOrFail(id);
+
+    return response.send(user);
+  }
 
   /**
    * Update user details.
