@@ -99,7 +99,12 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({params, request, response}) {}
+  async destroy({params: {id}, request, response}) {
+    const product = await Product.findOrFail(id);
+    await product.delete();
+
+    return response.status(204).send();
+  }
 }
 
 module.exports = ProductController;
