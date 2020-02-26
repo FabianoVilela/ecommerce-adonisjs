@@ -37,7 +37,21 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({request, response}) {}
+  async store({request, response}) {
+    try {
+      const {name, description, price, image_id} = request.all();
+      const product = await Product.create({
+        name,
+        description,
+        price,
+        image_id,
+      });
+
+      return response.status(201).send(product);
+    } catch (error) {
+      return response.status(400);
+    }
+  }
 
   /**
    * Display a single product.
