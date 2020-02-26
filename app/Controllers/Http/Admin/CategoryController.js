@@ -73,7 +73,20 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({params, request, response}) {}
+  async update({params: {id}, request, response}) {
+    try {
+      const category = await Category.findOrFail(id);
+      const {title, description, image_id} = request.all();
+
+      category.merge({title, description, image_id});
+
+      await category.save();
+
+      return response.send(category);
+    } catch (error) {
+      return response.status(400);
+    }
+  }
 
   /**
    * Delete a category with id.
