@@ -5,6 +5,10 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const Image = use('App/Models/Image');
+const {manage_single_upload, manage_multiple_uploads} = use('App/Helpers');
+const fs = use('fs');
+const Transformer = use('App/Transformers/Admin/ImageTransformer');
+const Helpers = use('Helpers');
 
 /**
  * Resourceful controller for interacting with images
@@ -35,7 +39,7 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({request, response}) {
+  async store({request, response, transform}) {
     try {
       const fileJar = request.file('images', {
         types: ['image'],
@@ -103,7 +107,12 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({params, request, response, view}) {}
+  async show({params: {id}, request, response, view, transform}) {
+    let image = await Image.findOrFail(id);
+    image = transform.item(image, Transformer);
+
+    return response.send(image);
+  }
 
   /**
    * Update image details.
