@@ -35,7 +35,64 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({request, response}) {}
+  async store({request, response}) {
+    try {
+      const fileJar = request.file('images', {
+        types: ['image'],
+        size: '1mb',
+      });
+
+      let images = [];
+
+      if (!fileJar.files) {
+        const file = await manage_single_upload(fileJar);
+
+        if (file.moved()) {
+          const image = await Image.create({
+            path: file.fileName,
+            size: file.size,
+            original_name: file.clientName,
+            extension: file.subtype,
+          });
+
+          const transformedImage = await transform.item(image, Transformer);
+
+          images.push(transformedImage);
+
+          return response.status(201).send({successes: images, errors: {}});
+        }
+
+        return response.status(400).send({
+          message: 'Error on image upload!',
+        });
+      }
+
+      let files = await manage_multiple_uploads(fileJar);
+
+      await Promise.all(
+        files.successes.map(async file => {
+          const image = await Image.create({
+            path: file.fileName,
+            size: file.size,
+            original_name: file.clientName,
+            extension: file.subtype,
+          });
+
+          const transformedImage = await transform.item(image, Transformer);
+
+          images.push(transformedImage);
+        }),
+      );
+
+      return response
+        .status(201)
+        .send({successes: images, errors: files.errors});
+    } catch (error) {
+      return response.status(400).send({
+        message: 'Error on images upload!',
+      });
+    }
+  }
 
   /**
    * Display a single image.
