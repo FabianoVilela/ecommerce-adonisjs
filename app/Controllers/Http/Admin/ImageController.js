@@ -122,7 +122,21 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({params, request, response}) {}
+  async update({params: {id}, request, response, transform}) {
+    let image = await Image.findOrFail(id);
+
+    try {
+      image.merge(request.only(['original_name']));
+      await image.save();
+      image = await transform.item(image, Transformer);
+
+      return response.status(200).send(image);
+    } catch (error) {
+      return response.status(400).send({
+        message: 'Error on image update',
+      });
+    }
+  }
 
   /**
    * Delete a image with id.
