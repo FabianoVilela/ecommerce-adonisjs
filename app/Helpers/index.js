@@ -27,4 +27,26 @@ const str_random = async (length = 40) => {
   return randomString;
 };
 
-module.exports = {str_random};
+/**
+ * Move file to specific path. If no path is defined mot to 'public/uploads'
+ * @param { FileJar } file
+ * @param { string } path
+ * @return { Object<FileJar> }
+ */
+const manage_single_upload = async (file, path = null) => {
+  path = path ? path : Helpers.publicPath('uploads');
+
+  const random_name = await str_random(30);
+  let filename = `${new Date().getTime()}-${random_name}.${file.subtype}`;
+
+  await file.move(path, {
+    name: filename,
+  });
+
+  return file;
+};
+
+module.exports = {
+  str_random,
+  manage_single_upload,
+};
