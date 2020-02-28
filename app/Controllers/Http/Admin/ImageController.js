@@ -146,7 +146,22 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({params, request, response}) {}
+  async destroy({params: {id}, request, response}) {
+    const image = await Image.findOrFail(id);
+
+    try {
+      let filepath = Helpers.publicPath(`uploads/${image.path}`);
+
+      fs.unlinkSync(filepath);
+      await image.delete();
+
+      return response.status(204).send();
+    } catch (error) {
+      return response.status(400).send({
+        message: 'Error on image delete',
+      });
+    }
+  }
 }
 
 module.exports = ImageController;
