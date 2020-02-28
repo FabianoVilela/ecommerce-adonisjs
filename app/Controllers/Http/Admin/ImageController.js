@@ -4,6 +4,8 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Image = use('App/Models/Image');
+
 /**
  * Resourceful controller for interacting with images
  */
@@ -15,9 +17,15 @@ class ImageController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
+   * @param {Pagination} ctx.pagination
    */
-  async index({request, response, view}) {}
+  async index({response, pagination}) {
+    let images = await Image.query()
+      .orderBy('id', 'DESC')
+      .paginate(pagination.page, pagination.limit);
+
+    return response.send(images);
+  }
 
   /**
    * Create/save a new image.
