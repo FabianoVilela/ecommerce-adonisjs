@@ -45,13 +45,13 @@ class CouponController {
 
     /**
      * 1 - product - can be used only on specific products
-     * 2 - clients - can only be used by specific clients
-     * 3 - clients and products - can only be used on specific products and clients
+     * 2 - customers - can only be used by specific customers
+     * 3 - customers and products - can only be used on specific products and customers
      * 4 - can be used by any customer on any order
      */
 
     let can_use_for = {
-      client: false,
+      customer: false,
       product: false,
     };
 
@@ -73,7 +73,7 @@ class CouponController {
       // User relationship
       if (users && users.length > 0) {
         await service.syncUsers(users);
-        can_use_for.client = true;
+        can_use_for.customer = true;
       }
 
       if (products && products.length > 0) {
@@ -81,12 +81,12 @@ class CouponController {
         can_use_for.product = true;
       }
 
-      if (can_use_for.product && can_use_for.client)
-        coupon.can_use_for = 'product_client';
-      else if (can_use_for.product && !can_use_for.client)
+      if (can_use_for.product && can_use_for.customer)
+        coupon.can_use_for = 'product_customer';
+      else if (can_use_for.product && !can_use_for.customer)
         coupon.can_use_for = 'product';
-      else if (!can_use_for.product && can_use_for.client)
-        coupon.can_use_for = 'client';
+      else if (!can_use_for.product && can_use_for.customer)
+        coupon.can_use_for = 'customer';
       else coupon.can_use_for = 'all';
 
       await coupon.save(trx);
@@ -126,7 +126,57 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({params, request, response}) {}
+  async update({params: {id}, request, response}) {
+    const trx = await Database.beginTransaction();
+    let coupon = await Coupon.findOrFail(id);
+    let can_use_for = {
+      customer: false,
+      product: false,
+    };
+
+    try {
+      const couponData = request.only([
+        'code',
+        'discount',
+        'valid_from',
+        'valid_until',
+        'quantity',
+        'type',
+        'recursive',
+      ]);
+
+      coupon.merge(couponData);
+
+      const {users, products} = request.only(['users', 'products']);
+      const service = new Service(coupon, trx);
+
+      if (users && users.length > 0) {
+        await service.syncUsers(users);
+        can_use_for.customer = true;
+      }
+
+      if (products && products.length > 0) can_use_for.product = true;
+
+      if (can_use_for.product && can_use_for.customer)
+        coupon.can_use_for = 'product_customer';
+      else if (can_use_for.product && !can_use_for.customer)
+        coupon.can_use_for = 'product';
+      else if (!can_use_for.product && can_use_for.customer)
+        coupon.can_use_for = 'customer';
+      else coupon.can_use_for = 'all';
+
+      await coupon.save(trx);
+      await trx.commit();
+      coupon = await transform.item(coupon, Transformer);
+
+      return response.send(coupon);
+    } catch (error) {
+      await trx.rollback();
+      return response.status(400).send({
+        message: 'Error on update coupon',
+      });
+    }
+  }
 
   /**
    * Delete a coupon with id.
