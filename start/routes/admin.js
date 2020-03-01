@@ -16,4 +16,5 @@ Route.group(() => {
   Route.resource('orders', 'OrderController').apiOnly();
 })
   .prefix('v1/admin')
-  .namespace('Admin');
+  .namespace('Admin')
+  .middleware(['auth', 'is:( admin || manager )']);
