@@ -14,6 +14,7 @@ class ImageTransformer extends TransformerAbstract {
    */
   transform(image) {
     image = image.toJSON();
+
     return {
       id: image.id,
       url: image.url,
