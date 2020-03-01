@@ -6,6 +6,7 @@
 
 const Coupon = use('App/Models/Coupon');
 const Database = use('Database');
+const Service = use('App/Services/Coupon/CouponService');
 
 /**
  * Resourceful controller for interacting with coupons
