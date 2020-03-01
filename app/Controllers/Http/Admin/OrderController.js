@@ -91,7 +91,7 @@ class OrderController {
    * @param {Response} ctx.response
    */
   async update({params: {id}, request, response}) {
-    var order = await Order.findOrFail(id);
+    let order = await Order.findOrFail(id);
     const trx = await Database.beginTransaction();
 
     try {
