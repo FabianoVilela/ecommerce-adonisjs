@@ -143,6 +143,43 @@ class OrderController {
       });
     }
   }
+
+  async applyDiscount({params: {id}, request, response}) {
+    const {code} = request.all();
+    const coupon = await Coupon.findByOrFail('code', code.toUpperCase());
+    let order = await Order.findOrFail(id);
+    let discount,
+      info = {};
+
+    try {
+      const service = new Service(order);
+      const canAddDiscount = await service.canApplyDiscount(coupon);
+      const orderDiscounts = await order.coupons().getCount();
+
+      const cannApplyToOrder =
+        orderDiscounts < 1 || (orderDiscounts >= 1 && coupon.recursive);
+
+      if (canAddDiscount && cannApplyToOrder) {
+        discount = await Discount.findOrCreate({
+          order_id: order.id,
+          coupon_id: coupon.id,
+        });
+
+        info.message = 'Coupon successfully applied!';
+        info.success = true;
+      } else {
+        info.message = 'This coupon could not be applied!';
+        info.success = false;
+      }
+      order = await transform
+        .include('items,user,discounts,coupons')
+        .item(order, Transformer);
+
+      return response.send({order, info});
+    } catch (error) {
+      return response.status(400).send({message: 'Error on apply coupon'});
+    }
+  }
 }
 
 module.exports = OrderController;

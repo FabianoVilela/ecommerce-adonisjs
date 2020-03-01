@@ -24,7 +24,7 @@ DiscountHook.calculateValues = async model => {
 
       if (coupon.type == 'percent')
         for (let orderItem of discountItems)
-          model.discount += (orderitem.subtotal / 100) * coupon.discount;
+          model.discount += (orderItem.subtotal / 100) * coupon.discount;
       else if (coupon.type == 'currency')
         for (let orderItem of discountItems)
           model.discount += coupon.discount * orderItem.quantity;
@@ -35,7 +35,7 @@ DiscountHook.calculateValues = async model => {
       break;
 
     default:
-      // costumer || all
+      // Costumer || all
       if (coupon.type == 'percent')
         model.discount = (order.subtotal / 100) * coupon.discount;
       else if (coupon.type == 'currency') model.discount = coupon.discount;
