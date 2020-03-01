@@ -5,6 +5,7 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const Coupon = use('App/Models/Coupon');
+const Database = use('Database');
 
 /**
  * Resourceful controller for interacting with coupons
@@ -23,7 +24,7 @@ class CouponController {
     const code = request.input('code');
     const query = Coupon.query();
 
-    if (code) query.where('code', 'LIKE', `%${code}%`);
+    if (code) query.where('code', 'ILIKE', `%${code}%`);
 
     let coupons = await query.paginate(pagination.page, pagination.limit);
 
@@ -38,7 +39,68 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({request, response}) {}
+  async store({request, response}) {
+    const trx = await Database.beginTransaction();
+
+    /**
+     * 1 - product - can be used only on specific products
+     * 2 - clients - can only be used by specific clients
+     * 3 - clients and products - can only be used on specific products and clients
+     * 4 - can be used by any customer on any order
+     */
+
+    let can_use_for = {
+      client: false,
+      product: false,
+    };
+
+    try {
+      const couponData = request.only([
+        'code',
+        'discount',
+        'valid_from',
+        'valid_until',
+        'quantity',
+        'type',
+        'recursive',
+      ]);
+
+      const {users, products} = request.only(['users', 'products']);
+      let coupon = await Coupon.create(couponData, trx);
+      const service = new Service(coupon, trx);
+
+      // User relationship
+      if (users && users.length > 0) {
+        await service.syncUsers(users);
+        can_use_for.client = true;
+      }
+
+      if (products && products.length > 0) {
+        await service.syncProducts(products);
+        can_use_for.product = true;
+      }
+
+      if (can_use_for.product && can_use_for.client)
+        coupon.can_use_for = 'product_client';
+      else if (can_use_for.product && !can_use_for.client)
+        coupon.can_use_for = 'product';
+      else if (!can_use_for.product && can_use_for.client)
+        coupon.can_use_for = 'client';
+      else coupon.can_use_for = 'all';
+
+      await coupon.save(trx);
+      await trx.commit();
+
+      coupon = await transform
+        .include('users,products')
+        .item(coupon, Transformer);
+
+      return response.status(201).send(coupon);
+    } catch (error) {
+      await trx.rollback();
+      return response.status(400).send({message: 'Error on create coupon!'});
+    }
+  }
 
   /**
    * Display a single coupon.
@@ -73,7 +135,26 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({params, request, response}) {}
+  async destroy({params: {id}, request, response}) {
+    const trx = await Database.beginTransaction();
+    const coupon = await Coupon.findOrFail(id);
+
+    try {
+      await coupon.products().detach([], trx);
+      await coupon.orders().detach([], trx);
+      await coupon.users().detach([], trx);
+      await coupon.delete(trx);
+      await trx.commit();
+
+      return response.status(204).send();
+    } catch (error) {
+      await trx.rollback();
+
+      return response.status(400).send({
+        message: 'Error on delete coupon',
+      });
+    }
+  }
 }
 
 module.exports = CouponController;
