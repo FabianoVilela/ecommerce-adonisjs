@@ -4,7 +4,14 @@
 const Route = use('Route');
 
 Route.group(() => {
-  Route.resource('categories', 'CategoryController').apiOnly();
+  Route.resource('categories', 'CategoryController')
+    .apiOnly()
+    .validator(
+      new Map([
+        [['categories.store'], ['Admin/StoreCategory']],
+        [['categories.update'], ['Admin/StoreCategory']],
+      ]),
+    );
   Route.resource('products', 'ProductController').apiOnly();
   Route.resource('images', 'ImageController').apiOnly();
   Route.resource('users', 'UserController').apiOnly();

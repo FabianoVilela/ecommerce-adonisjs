@@ -7,10 +7,12 @@ Route.group(() => {
   // Authentication routes
   Route.post('register', 'AuthController.register')
     .as('auth.register')
-    .middleware(['guest']);
+    .middleware(['guest'])
+    .validator('Auth/Register');
   Route.post('login', 'AuthController.login')
     .as('auth.login')
-    .middleware(['guest']);
+    .middleware(['guest'])
+    .validator('Auth/Login');
   Route.post('logout', 'AuthController.logout')
     .as('auth.logout')
     .middleware(['auth']);
