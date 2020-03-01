@@ -21,12 +21,15 @@ class ImageController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    * @param {Pagination} ctx.pagination
    */
-  async index({response, pagination}) {
+  async index({response, pagination, transform}) {
     let images = await Image.query()
       .orderBy('id', 'DESC')
       .paginate(pagination.page, pagination.limit);
+
+    images = await transform.paginate(images, Transformer);
 
     return response.send(images);
   }
@@ -38,6 +41,7 @@ class ImageController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
   async store({request, response, transform}) {
     try {
@@ -105,9 +109,9 @@ class ImageController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
+   * @param {TransformWith} ctx.transform
    */
-  async show({params: {id}, request, response, view, transform}) {
+  async show({params: {id}, request, response, transform}) {
     let image = await Image.findOrFail(id);
     image = transform.item(image, Transformer);
 
@@ -121,6 +125,7 @@ class ImageController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
   async update({params: {id}, request, response, transform}) {
     let image = await Image.findOrFail(id);
