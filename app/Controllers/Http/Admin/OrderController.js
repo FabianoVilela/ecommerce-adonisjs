@@ -6,6 +6,7 @@
 
 const Order = use('App/Models/Order');
 const Database = use('Database');
+const Service = use('App/Services/Order/OrderService');
 const Coupon = use('App/Models/Coupon');
 const Discount = use('App/Models/Discount');
 
@@ -44,7 +45,29 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({request, response}) {}
+  async store({request, response}) {
+    const trx = await Database.beginTransaction();
+
+    try {
+      const {user_id, items, status} = request.all();
+      let order = await Order.create({user_id, status}, trx);
+      const service = new Service(order, trx);
+
+      if (items && items.length > 0) await service.syncItems(items);
+
+      await trx.commit();
+
+      order = await Order.find(order.id);
+
+      return response.status(201).send(order);
+    } catch (error) {
+      await trx.rollback();
+
+      return response.status(400).send({
+        message: 'Error on order create',
+      });
+    }
+  }
 
   /**
    * Display a single order.
@@ -67,7 +90,31 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({params, request, response}) {}
+  async update({params: {id}, request, response}) {
+    var order = await Order.findOrFail(id);
+    const trx = await Database.beginTransaction();
+
+    try {
+      const {user_id, items, status} = request.all();
+      order.merge({user_id, status});
+
+      const service = new Service(order, trx);
+      await service.updateItems(items);
+      await order.save(trx);
+      await trx.commit();
+
+      order = await transform
+        .include('items,user,discounts,coupons')
+        .item(order, Transformer);
+
+      return response.send(order);
+    } catch (error) {
+      await trx.rollback();
+      return response.status(400).send({
+        message: 'Error on update order',
+      });
+    }
+  }
 
   /**
    * Delete a order with id.
