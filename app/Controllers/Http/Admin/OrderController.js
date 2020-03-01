@@ -51,11 +51,13 @@ class OrderController {
    * GET orders/:id
    *
    * @param {object} ctx
-   * @param {Request} ctx.request
    * @param {Response} ctx.response
-   * @param {View} ctx.view
    */
-  async show({params, request, response, view}) {}
+  async show({params: {id}, response}) {
+    let order = await Order.findOrFail(id);
+
+    return response.send(order);
+  }
 
   /**
    * Update order details.
