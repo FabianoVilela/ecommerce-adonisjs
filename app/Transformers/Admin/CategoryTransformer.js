@@ -2,6 +2,7 @@
 
 const TransformerAbstract = use('Adonis/Addons/Bumblebee/TransformerAbstract');
 const ImageTransformer = use('App/Transformers/Admin/ImageTransformer');
+
 /**
  * CategoryTransformer class
  *
@@ -9,7 +10,7 @@ const ImageTransformer = use('App/Transformers/Admin/ImageTransformer');
  * @constructor
  */
 class CategoryTransformer extends TransformerAbstract {
-  defaultInclude() {
+  static get defaultInclude() {
     return ['image'];
   }
 
