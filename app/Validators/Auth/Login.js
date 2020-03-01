@@ -1,6 +1,6 @@
 'use strict';
 
-class Login {
+class AuthLogin {
   get rules() {
     return {
       // validation rules
@@ -10,4 +10,4 @@ class Login {
   }
 }
 
-module.exports = Login;
+module.exports = AuthLogin;
