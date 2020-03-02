@@ -21,6 +21,7 @@ class OrderTransformer extends TransformerAbstract {
    */
   transform(order) {
     order = order.toJSON();
+
     return {
       id: order.id,
       status: order.status,

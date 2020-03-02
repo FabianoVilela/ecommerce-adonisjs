@@ -12,7 +12,7 @@ class Order extends Model {
   }
 
   items() {
-    return this.hasMany('App/Models/Order');
+    return this.hasMany('App/Models/OrderItem');
   }
 
   coupons() {

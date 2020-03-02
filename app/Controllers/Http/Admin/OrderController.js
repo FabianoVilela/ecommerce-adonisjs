@@ -9,7 +9,7 @@ const Database = use('Database');
 const Service = use('App/Services/Order/OrderService');
 const Coupon = use('App/Models/Coupon');
 const Discount = use('App/Models/Discount');
-const Transformer = use('App/Transformers/Admin/ProductTransformer');
+const Transformer = use('App/Transformers/Admin/OrderTransformer');
 
 /**
  * Resourceful controller for interacting with orders
