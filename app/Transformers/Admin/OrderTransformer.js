@@ -13,7 +13,7 @@ const DiscountTransformer = use('App/Transformers/Admin/DiscountTransformer');
  * @constructor
  */
 class OrderTransformer extends TransformerAbstract {
-  availableInclude() {
+  static get availableInclude() {
     return ['user', 'coupons', 'items', 'discounts'];
   }
   /**
