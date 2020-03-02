@@ -9,6 +9,7 @@ const Database = use('Database');
 const Service = use('App/Services/Order/OrderService');
 const Coupon = use('App/Models/Coupon');
 const Discount = use('App/Models/Discount');
+const Transformer = use('App/Transformers/Admin/ProductTransformer');
 
 /**
  * Resourceful controller for interacting with orders
@@ -22,8 +23,9 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {Pagination} ctx.pagination
+   * @param {TransformWith} ctx.transform
    */
-  async index({request, response, pagination}) {
+  async index({request, response, pagination, transform}) {
     const {status, id} = request.only(['status', 'id ']);
     const query = Order.query();
 
@@ -32,7 +34,8 @@ class OrderController {
     else if (status) query.where('status', status);
     else if (id) query.where('id', 'ILIKE', `%${id}%`);
 
-    const orders = await query.paginate(pagination.page, pagination.limit);
+    let orders = await query.paginate(pagination.page, pagination.limit);
+    orders = await transform.paginate(orders, Transformer);
 
     return response.send(orders);
   }
@@ -44,8 +47,9 @@ class OrderController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
-  async store({request, response}) {
+  async store({request, response, transform}) {
     const trx = await Database.beginTransaction();
 
     try {
@@ -58,6 +62,7 @@ class OrderController {
       await trx.commit();
 
       order = await Order.find(order.id);
+      order = await transform.item(order, Transformer);
 
       return response.status(201).send(order);
     } catch (error) {
@@ -75,9 +80,11 @@ class OrderController {
    *
    * @param {object} ctx
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
-  async show({params: {id}, response}) {
+  async show({params: {id}, response, transform}) {
     let order = await Order.findOrFail(id);
+    order = await transform.item(order, Transformer);
 
     return response.send(order);
   }
@@ -89,8 +96,9 @@ class OrderController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
-  async update({params: {id}, request, response}) {
+  async update({params: {id}, request, response, transform}) {
     let order = await Order.findOrFail(id);
     const trx = await Database.beginTransaction();
 
