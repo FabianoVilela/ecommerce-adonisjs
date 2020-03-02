@@ -23,6 +23,7 @@ class CouponTransformer extends TransformerAbstract {
 
     delete coupon.created_at;
     delete coupon.updated_at;
+
     return coupon;
   }
 

@@ -7,6 +7,7 @@
 const Coupon = use('App/Models/Coupon');
 const Database = use('Database');
 const Service = use('App/Services/Coupon/CouponService');
+const Transformer = use('App/Transformers/Admin/CouponTransformer');
 
 /**
  * Resourceful controller for interacting with coupons
@@ -20,8 +21,9 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {Pagination} ctx.pagination
+   * @param {TransformWith} ctx.transform
    */
-  async index({request, response, pagination}) {
+  async index({request, response, pagination, transform}) {
     const code = request.input('code');
     const query = Coupon.query();
 
@@ -39,8 +41,9 @@ class CouponController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
-  async store({request, response}) {
+  async store({request, response, transform}) {
     const trx = await Database.beginTransaction();
 
     /**
@@ -111,9 +114,11 @@ class CouponController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    * @param {View} ctx.view
+   * @param {TransformWith} ctx.transform
    */
-  async show({params: {id}, request, response}) {
+  async show({params: {id}, request, response, transform}) {
     let coupon = await Coupon.findOrFail(id);
+    coupon = await transform.item(coupon, Transformer);
 
     return response.send(coupon);
   }
@@ -125,8 +130,9 @@ class CouponController {
    * @param {object} ctx
    * @param {Request} ctx.request
    * @param {Response} ctx.response
+   * @param {TransformWith} ctx.transform
    */
-  async update({params: {id}, request, response}) {
+  async update({params: {id}, request, response, transform}) {
     const trx = await Database.beginTransaction();
     let coupon = await Coupon.findOrFail(id);
     let can_use_for = {
