@@ -35,7 +35,9 @@ class OrderController {
     else if (id) query.where('id', 'ILIKE', `%${id}%`);
 
     let orders = await query.paginate(pagination.page, pagination.limit);
-    orders = await transform.paginate(orders, Transformer);
+    orders = await transform
+      .include('user, items')
+      .paginate(orders, Transformer);
 
     return response.send(orders);
   }
@@ -62,7 +64,7 @@ class OrderController {
       await trx.commit();
 
       order = await Order.find(order.id);
-      order = await transform.item(order, Transformer);
+      order = await transform.include('user, items').item(order, Transformer);
 
       return response.status(201).send(order);
     } catch (error) {
@@ -84,7 +86,9 @@ class OrderController {
    */
   async show({params: {id}, response, transform}) {
     let order = await Order.findOrFail(id);
-    order = await transform.item(order, Transformer);
+    order = await transform
+      .include('user, items, discounts')
+      .item(order, Transformer);
 
     return response.send(order);
   }
@@ -112,7 +116,7 @@ class OrderController {
       await trx.commit();
 
       order = await transform
-        .include('items,user,discounts,coupons')
+        .include('items, user, discounts, coupons')
         .item(order, Transformer);
 
       return response.send(order);
