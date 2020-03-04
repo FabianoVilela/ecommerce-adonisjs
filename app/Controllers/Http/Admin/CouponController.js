@@ -96,7 +96,7 @@ class CouponController {
       await trx.commit();
 
       coupon = await transform
-        .include('users,products')
+        .include('users, products')
         .item(coupon, Transformer);
 
       return response.status(201).send(coupon);
@@ -118,7 +118,9 @@ class CouponController {
    */
   async show({params: {id}, request, response, transform}) {
     let coupon = await Coupon.findOrFail(id);
-    coupon = await transform.item(coupon, Transformer);
+    coupon = await transform
+      .include('products, users, orders')
+      .item(coupon, Transformer);
 
     return response.send(coupon);
   }

@@ -35,9 +35,7 @@ class OrderController {
     else if (id) query.where('id', 'ILIKE', `%${id}%`);
 
     let orders = await query.paginate(pagination.page, pagination.limit);
-    orders = await transform
-      .include('user, items')
-      .paginate(orders, Transformer);
+    orders = await transform.paginate(orders, Transformer);
 
     return response.send(orders);
   }
